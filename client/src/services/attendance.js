@@ -1,9 +1,11 @@
-import api from "./api";
+import api from './api';
 
-export const markAttendance = (data) => {
-  return api.post("/attendance", data);
+export const markAttendance = async (attendanceData) => {
+  const response = await api.post('/attendance', attendanceData);
+  return response.data;
 };
 
-export const fetchAttendanceByEmployee = (employeeId) => {
-  return api.get(`/attendance/${employeeId}`);
+export const getAttendance = async (employeeId) => {
+  const response = await api.get(`/attendance/${employeeId}`);
+  return response.data;
 };
