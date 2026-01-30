@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
-from app.database import employee_collection
+from app.database import employee_collection , attendance_collection
 from app.schemas import EmployeeCreate
 from app.models import employee_document
+
 
 router = APIRouter()
 
@@ -40,16 +41,32 @@ def create_employee(employee: EmployeeCreate):
 
 
 # Handle Delete Request
-@router.delete("/employees/{employee_id}")
+@router.delete(
+    "/employees/{employee_id}",
+    status_code=status.HTTP_200_OK
+)
 def delete_employee(employee_id: str):
-    result = employee_collection.delete_one(
+    # Step 1: Check if employee exists
+    employee = employee_collection.find_one(
         {"employee_id": employee_id}
     )
 
-    if result.deleted_count == 0:
+    if not employee:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Employee not found"
         )
 
-    return {"message": "Employee deleted successfully"}
+    # Step 2: Delete employee record
+    employee_collection.delete_one(
+        {"employee_id": employee_id}
+    )
+
+    # Step 3: Cascade delete attendance records
+    attendance_collection.delete_many(
+        {"employee_id": employee_id}
+    )
+
+    return {
+        "message": "Employee and related attendance records deleted successfully"
+    }
