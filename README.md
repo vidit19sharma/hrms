@@ -152,18 +152,4 @@ http://localhost:5173
 
 ---
 
-## Submission Checklist
-
-* [x] Live frontend URL (publicly accessible)
-* [x] Live backend API deployed
-* [x] Frontend connected to live backend
-* [x] Public GitHub repository
-* [x] Clean project structure
-* [x] Complete README documentation
-
----
-
-Thank you for reviewing the project.
-
-```
 
