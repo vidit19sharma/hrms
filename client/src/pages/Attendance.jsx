@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getEmployees } from '@/services/employees';
 import { markAttendance, getAttendance } from '@/services/attendance';
 import Button from '@/components/Button';
@@ -18,6 +18,8 @@ const Attendance = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [formData, setFormData] = useState({
     employee_id: '',
     date: new Date().toISOString().split('T')[0],
@@ -121,6 +123,23 @@ const Attendance = () => {
 
   const selectedEmployeeData = employees.find(e => e.employee_id === selectedEmployee);
 
+  // Filter attendance records based on date range
+  const filteredAttendance = useMemo(() => {
+    if (!attendance.length) return [];
+    
+    return attendance.filter((record) => {
+      const recordDate = record.date;
+      if (fromDate && recordDate < fromDate) return false;
+      if (toDate && recordDate > toDate) return false;
+      return true;
+    });
+  }, [attendance, fromDate, toDate]);
+
+  // Calculate total present days from filtered data
+  const totalPresentDays = useMemo(() => {
+    return filteredAttendance.filter((record) => record.status === 'Present').length;
+  }, [filteredAttendance]);
+
   return (
     <div className="space-y-4 fade-in">
       {/* Alerts */}
@@ -203,12 +222,44 @@ const Attendance = () => {
             </div>
           )}
 
+          {/* Date Filters */}
+          {selectedEmployee && (
+            <div className="mb-3 grid gap-3 sm:grid-cols-2">
+              <Input
+                label="From Date"
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                disabled={loadingAttendance}
+              />
+              <Input
+                label="To Date"
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                disabled={loadingAttendance}
+              />
+            </div>
+          )}
+
+          {/* Total Present Days Summary */}
+          {selectedEmployee && !loadingAttendance && filteredAttendance.length > 0 && (
+            <div className="mb-3 rounded-lg border border-success/30 bg-success/10 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Total Present Days</span>
+                <Badge variant="success" className="text-sm">
+                  {totalPresentDays} {totalPresentDays === 1 ? 'day' : 'days'}
+                </Badge>
+              </div>
+            </div>
+          )}
+
           {selectedEmployee ? (
             <Table
               columns={columns}
-              data={attendance}
+              data={filteredAttendance}
               loading={loadingAttendance}
-              emptyMessage={`No attendance records for ${selectedEmployeeData?.full_name || 'this employee'}.`}
+              emptyMessage={fromDate || toDate ? 'No attendance records match the selected date range.' : `No attendance records for ${selectedEmployeeData?.full_name || 'this employee'}.`}
             />
           ) : (
             <div className="rounded-xl border border-border bg-card p-8 text-center">
