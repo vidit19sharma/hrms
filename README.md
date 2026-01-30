@@ -21,6 +21,19 @@ The scope is intentionally limited to core HR operations, focusing on stability,
 - Prevent duplicate attendance entries for the same employee on the same date
 - View attendance records per employee
 
+###  Bonus Features Implemented
+
+The application includes the following optional enhancements to improve usability and data visibility:
+
+#### Attendance Enhancements
+
+* **Date-based filtering:**
+  Attendance records can be filtered using a “From” and “To” date range directly on the frontend.
+* **Total present days summary:**
+  Displays the total number of days an employee was marked as *Present*, calculated dynamically from attendance records.
+
+These enhancements are implemented on the frontend without introducing additional backend complexity, keeping the system lightweight and efficient.
+
 ### General
 - RESTful API design
 - Server-side validation and meaningful error messages
