@@ -1,24 +1,55 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from app.database import employee_collection
 from app.schemas import EmployeeCreate
 from app.models import employee_document
 
 router = APIRouter()
 
-@router.post("/employees")
+# Handle Get Request
+@router.get("/employees")
+def get_all_employees():
+    employees = list(employee_collection.find({}, {"_id": 0}))
+    return employees
+
+
+# Handle Post Request
+@router.post(
+    "/employees",
+    status_code=status.HTTP_201_CREATED
+)
 def create_employee(employee: EmployeeCreate):
-    existing = employee_collection.find_one({
+    # Check for duplicate employee_id or email
+    existing_employee = employee_collection.find_one({
         "$or": [
             {"employee_id": employee.employee_id},
             {"email": employee.email}
         ]
     })
 
-    if existing:
+    if existing_employee:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Employee with this ID or email already exists"
         )
 
-    employee_collection.insert_one(employee_document(employee.dict()))
+    employee_collection.insert_one(
+        employee_document(employee.dict())
+    )
+
     return {"message": "Employee created successfully"}
+
+
+# Handle Delete Request
+@router.delete("/employees/{employee_id}")
+def delete_employee(employee_id: str):
+    result = employee_collection.delete_one(
+        {"employee_id": employee_id}
+    )
+
+    if result.deleted_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found"
+        )
+
+    return {"message": "Employee deleted successfully"}
