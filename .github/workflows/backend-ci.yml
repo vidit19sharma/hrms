@@ -1,11 +1,11 @@
 name: Backend CI
 
 on:
-  pull_request:
-    paths:
-      - "server/**"
   push:
     branches: [main]
+    paths:
+      - "server/**"
+  pull_request:
     paths:
       - "server/**"
 
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.10"
@@ -27,10 +27,7 @@ jobs:
           cd server
           pip install -r requirements.txt
 
-      - name: Import app
+      - name: Verify FastAPI app loads
         run: |
           cd server
-          python - <<EOF
-from app.main import app
-print("FastAPI app loaded successfully")
-EOF
+          python -c "from app.main import app; print('FastAPI app loaded successfully')"
