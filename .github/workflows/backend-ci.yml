@@ -1,0 +1,36 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - "server/**"
+  push:
+    branches: [main]
+    paths:
+      - "server/**"
+
+jobs:
+  backend-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          cd server
+          pip install -r requirements.txt
+
+      - name: Import app
+        run: |
+          cd server
+          python - <<EOF
+from app.main import app
+print("FastAPI app loaded successfully")
+EOF
